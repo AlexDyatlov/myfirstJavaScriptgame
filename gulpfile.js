@@ -92,7 +92,7 @@ gulp.task("style", function () {
 	return gulp
 		.src([
 			//указываем, где брать исходники
-			"node_modules/normalize.css/normalize.css",
+			"node_modules/reset-css/reset.css"
 		])
 		.pipe(sourcemaps.init())
 		.pipe(concat("libs.min.css")) //склеиваем их в один файл с указанным именем
