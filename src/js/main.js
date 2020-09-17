@@ -20,11 +20,11 @@ $(function(){
   const setting = {
     start: false,
     score: 0,
-    speed: 3,
+    speed: 5,
     traffic: 3
   }
 
-  function getQuantityElements(heightElement) {
+  function getQuantityElements(heightElement) { // возвращает количество элементов сколько можно поместить на странице
     return document.documentElement.clientHeight / heightElement + 1;
   }
 
@@ -32,7 +32,8 @@ $(function(){
 
   function startGame(){
     start.classList.add('hide');
-    for (let i = 0; i < getQuantityElements(100); i++) {
+    gameArea.innerHTML = '';
+    for (let i = 0; i < getQuantityElements(100); i++) {      // добавили линии
       const line = document.createElement('div');
       line.classList.add('line');
       line.style.top = (i * 100) +'px';
@@ -40,19 +41,22 @@ $(function(){
       gameArea.appendChild(line);
     }
 
-    for (let i = 0; i < getQuantityElements(100 * setting.traffic); i++) {
+    for (let i = 0; i < getQuantityElements(100 * setting.traffic); i++) { // добавили автомобили
       const enemy = document.createElement('div');
       enemy.classList.add('enemy');
       enemy.y = -100 * setting.traffic * (i + 1);
       enemy.style.left = Math.floor(Math.random() * (gameArea.offsetWidth - 50)) + 'px';
-      enemy.style.top = enemy.y + 'px';
+      enemy.style.top = enemy.y +'px';
       enemy.style.background = 'transparent url("../images/content/enemy2.png") center / cover  no-repeat';
       gameArea.appendChild(enemy);
-
     }
 
+    setting.score = 0;
     setting.start = true;
     gameArea.appendChild(car);
+    car.style.left = gameArea.offsetWidth/2 - car.offsetWidth/2;
+    car.style.top = 'auto';
+    car.style.bottom = '10px';
     setting.x = car.offsetLeft;
     setting.y = car.offsetTop;
     requestAnimationFrame(playGame);
@@ -60,7 +64,9 @@ $(function(){
 
   function playGame(){
     if (setting.start) {
-      moveRoad();
+      setting.score += setting.speed;
+      score.innerHTML = 'SCORE<br>' + setting.score;
+      moveRoad(); // движение дороги
       moveEnemy();
       if (keys.ArrowLeft && setting.x > 0) {
         setting.x -= setting.speed;
@@ -96,22 +102,36 @@ $(function(){
   }
 
   function moveRoad() {
-    let lines = document.querySelectorAll('.line');
-    lines.forEach(function(line){
+    let lines = document.querySelectorAll('.line'); // получили все линии
+    lines.forEach(function(line){ // перебираем все линии
       line.y += setting.speed;
-      line.style.top = line.y +'px';
+      line.style.top = line.y + 'px';
 
-      if (line.y >=document.documentElement.clientHeight) {
+      if (line.y >=document.documentElement.clientHeight) { // возвращаем линии
         line.y = -100;
       }
 
     })
   }
 
-  function moveEnemy(){
-
+  function moveEnemy(){ // тоже самое как и с линиями
     let enemy = document.querySelectorAll('.enemy');
+
     enemy.forEach(function(item){
+      let carRect = car.getBoundingClientRect();
+      let enemyRect = item.getBoundingClientRect(); 
+
+      if (carRect.top <= enemyRect.bottom &&
+        carRect.right >= enemyRect.left && 
+        carRect.left <= enemyRect.right &&
+        carRect.bottom >= enemyRect.top) {
+          setting.start = false;
+          console.warn('ДТП');
+          start.classList.remove('hide');
+          start.style.top = score.offsetHeight;
+      }
+      
+
       item.y += setting.speed / 2;
       item.style.top = item.y + 'px';
       if (item.y >= document.documentElement.clientHeight){
